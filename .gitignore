@@ -1,0 +1,5 @@
+web-version-temp/
+downloads/
+*.log
+node_modules/
+secrets.json

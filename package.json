@@ -1,0 +1,11 @@
+{
+  "name": "yt2mp3",
+  "version": "0.0.0",
+  "description": "YouTube video downloader",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "argv": "0.0.2",
+    "async": "^1.5.2"
+  }
+}
