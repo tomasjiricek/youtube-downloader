@@ -32,7 +32,7 @@ function downloadVideo(name, url, options, done) {
         if (isNaN(mbSize)) {
             mbSize = 0;
         }
-        
+
         let fileExists;
         let skipped;
         videoInfo = info;
@@ -99,7 +99,6 @@ function queuePlaylistItems(items, queue, downloadLog) {
 
     items.forEach((item) => {
         if (downloadLog.indexOf(item.id + ';') !== -1) {
-            // console.log(`Skipping ${item.title}`);
             skippedItems++;
         } else {
             queue.push(item);
@@ -141,7 +140,10 @@ function startProcess(url, options) {
                 }
             });
 
-            series.push(synchronizeDownloads.bind(this, options.dstDir));
+            if (GOOGLE_DRIVE_SYNC_FOLDER_ID !== null && GOOGLE_DRIVE_SYNC_FOLDER_ID.length > 0) {
+                series.push(synchronizeDownloads.bind(this, options.dstDir));
+            }
+
             async.series(series);
         } else {
             console.log(err);
@@ -237,6 +239,6 @@ exec(`ps -ef | grep "node ${__dirname}"`, (err, result) => {
     if (lines.length <= 1) {
         startProcess(YOUTUBE_PLAYLIST_LINK, options);
     } else {
-        console.log('Another downloadSync process is already running.');
+        console.log(`Another ${fileName} process is already running.`);
     }
 });
