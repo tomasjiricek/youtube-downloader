@@ -2,8 +2,12 @@ const async = require('async');
 const exec = require('child_process').exec;
 const fs = require('fs');
 const path = require('path');
-const { GOOGLE_DRIVE_SYNC_FOLDER_ID } = require('./secrets.json');
 const ytdl = require('./lib/ytdl');
+
+const {
+    GOOGLE_DRIVE_SYNC_FOLDER_ID,
+    YOUTUBE_PLAYLIST_LINK
+} = require('./secrets.json');
 
 const DOWNLOAD_LOG_PATH = path.join(__dirname, 'downloaded.log');
 
@@ -122,8 +126,8 @@ function startProcess(url, options) {
     }
 
     ytdlGetPlaylistInfo(url, options.infoOpt, (err, items) => {
-        console.log('Info received. Preparing video(s)...');
         if (!err) {
+            console.log('Info received. Preparing video(s)...');
             const series = [];
             const queue = async.queue(queueDownloadWorker, 3);
 
@@ -140,13 +144,14 @@ function startProcess(url, options) {
                 }
             });
 
-            if (GOOGLE_DRIVE_SYNC_FOLDER_ID !== null && GOOGLE_DRIVE_SYNC_FOLDER_ID.length > 0) {
+            if (GOOGLE_DRIVE_SYNC_FOLDER_ID !== null) {
                 series.push(synchronizeDownloads.bind(this, options.dstDir));
             }
 
             async.series(series);
         } else {
             console.log(err);
+            console.log(`URL of the playlist: "${YOUTUBE_PLAYLIST_LINK}"`)
         }
     });
 }
