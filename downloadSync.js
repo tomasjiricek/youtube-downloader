@@ -244,6 +244,6 @@ exec(`ps -ef | grep "node ${__dirname}"`, (err, result) => {
     if (lines.length <= 1) {
         startProcess(YOUTUBE_PLAYLIST_LINK, options);
     } else {
-        console.log(`Another ${fileName} process is already running.`);
+        console.error(`Cannot run ${fileName}: Another process is already running.`);
     }
 });
