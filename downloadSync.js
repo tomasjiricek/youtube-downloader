@@ -17,7 +17,8 @@ function wipePathDisabledChars(str) {
     return str
         .replace(/[\\\/\:\*\?\<\>\|]/g, '_')
         .replace(/['"\u1000-\uFFFF]/g, '')
-        .trim();
+        .trim()
+        .replace(/ {2,}/g, ' ');
 }
 
 function downloadVideo(name, url, options, done) {
