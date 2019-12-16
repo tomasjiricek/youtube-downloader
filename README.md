@@ -7,6 +7,7 @@ YouTube downloader dependent on several tools, working in Linux (including Raspb
 **Mandatory:**
 - `ffmpeg` (can be just alias of `avconv`)
 - `npm` with `node`
+- `python`
 
 **Optional:**
 - `gdrive` (for synchronizing with your Google Drive) - setup required, see: https://github.com/gdrive-org/gdrive
