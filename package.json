@@ -6,7 +6,8 @@
   "license": "ISC",
   "scripts": {
     "postinstall": "cd lib/ytdl && npm install",
-    "start": "node downloadSync"
+    "start": "node downloadSync",
+    "updateYoutubeDl": "cd lib/ytdl && npm install youtube-dl@latest"
   },
   "dependencies": {
     "argv": "0.0.2",
