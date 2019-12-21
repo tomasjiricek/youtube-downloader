@@ -2,10 +2,12 @@ const async = require('async');
 const exec = require('child_process').exec;
 const fs = require('fs');
 const path = require('path');
+
+const gdrive = require('./lib/gdrive');
 const ytdl = require('./lib/ytdl');
 
 const {
-    GOOGLE_DRIVE_SYNC_FOLDER_ID,
+    GOOGLE_DRIVE_SYNC_FOLDER_NAME,
     YOUTUBE_PLAYLIST_LINK
 } = require('./secrets.json');
 
@@ -145,8 +147,8 @@ function startProcess(url, options) {
                 }
             });
 
-            if (GOOGLE_DRIVE_SYNC_FOLDER_ID !== null) {
-                series.push(synchronizeDownloads.bind(this, options.dstDir));
+            if (GOOGLE_DRIVE_SYNC_FOLDER_NAME !== null) {
+                series.push(gdrive.synchronize.bind(this, options.dstDir, GOOGLE_DRIVE_SYNC_FOLDER_NAME));
             }
 
             async.series(series);
@@ -166,9 +168,9 @@ function convertToAudioFile(video, done) {
     }
 
     console.log(`Converting ${video.title}...`);
-    const avConv = exec(`ffmpeg -i "${video.tmpDir}/${video.fileName}" -vn -c:a copy "${dstPath}"`);
+    const proc = exec(`ffmpeg -i "${video.tmpDir}/${video.fileName}" -vn -c:a copy "${dstPath}"`);
 
-    avConv.on('exit', (code) => {
+    proc.on('exit', (code) => {
         if (code !== 0) {
             console.log(`Failed to convert ${video.title}`);
         } else {
@@ -188,17 +190,17 @@ function ytdlGetPlaylistInfo(playlistUrl, options, callback) {
     }
 
     console.log('Getting info...');
-    const playlistProcess = ytdl.getInfo(playlistUrl, args);
+    const proc = ytdl.getInfo(playlistUrl, args);
 
-    playlistProcess.on('info', (data) => {
+    proc.on('info', (data) => {
         callback(null, data.entries);
     });
 
-    playlistProcess.on('error', (error) => {
+    proc.on('error', (error) => {
         callback(error);
     });
 
-    playlistProcess.on('end', (code) => {
+    proc.on('end', (code) => {
         // nothing to report
     });
 }
@@ -207,34 +209,11 @@ function getFinalAudioExtension(originalExt) {
     return originalExt.toLowerCase() === 'webm' ? 'ogg' : originalExt;
 }
 
-function synchronizeDownloads(dstDir, done) {
-    console.log('Started synchronization...');
-    const sync = exec(`gdrive sync upload ${dstDir} ${GOOGLE_DRIVE_SYNC_FOLDER_ID}`);
-
-    sync.stdout.on('data', (data) => {
-        // console.log(data.toString());
-    });
-
-    sync.stderr.on('data', (data) => {
-        // console.log(data.toString());
-    });
-
-    sync.on('error', (e) => {
-        console.log('error', e);
-    });
-
-    sync.on('exit', (code) => {
-        console.log('Synchronized.');
-        done();
-    });
-}
-
 const options = {
     downOpt: ['-f', 'bestaudio/best'],
     infoOpt: ['--flat-playlist'],
     dstDir: path.join(__dirname, 'downloads'),
-    tmpDir: path.join(__dirname, 'temp'),
-    isCronCall: true
+    tmpDir: path.join(__dirname, 'temp')
 };
 
 exec(`ps -ef | grep "node ${__dirname}"`, (err, result) => {
