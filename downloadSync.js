@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const gdrive = require('./lib/gdrive');
+const { logWithTime } = require('./lib/logger');
 const ytdl = require('./lib/ytdl');
 
 const {
@@ -12,6 +13,8 @@ const {
 } = require('./secrets.json');
 
 const DOWNLOAD_LOG_PATH = path.join(__dirname, 'downloaded.log');
+
+console.log = logWithTime;
 
 let skippedItems = 0;
 
