@@ -14,8 +14,6 @@ const {
 
 const DOWNLOAD_LOG_PATH = path.join(__dirname, 'downloaded.log');
 
-console.log = logWithTime;
-
 let skippedItems = 0;
 
 function wipePathDisabledChars(str) {
@@ -34,7 +32,7 @@ function downloadVideo(name, url, options, done) {
 
     const video = ytdl.download(url, dstPath, options.downOpt);
 
-    console.log(`Getting video info for ${name}...`);
+    logWithTime(`Getting video info for ${name}...`);
 
     video.on('info', (info) => {
         let mbSize = Math.round((parseInt(info.filesize, 10) / 1024 / 1024) * 100) / 100;
@@ -59,9 +57,9 @@ function downloadVideo(name, url, options, done) {
                 fs.unlinkSync(dstPath);
             }
             videoInfo.downloadStartTime = new Date().getTime();
-            console.log(`Downloading ${name} (${mbSize} MB)...`);
+            logWithTime(`Downloading ${name} (${mbSize} MB)...`);
         } else {
-            console.log(`Skipping download of ${name} - already downloaded`);
+            logWithTime(`Skipping download of ${name} - already downloaded`);
             videoInfo.downloadEndTime = video.downloadStartTime;
             videoInfo.skipped = true;
             done(fileName, videoInfo);
@@ -71,10 +69,10 @@ function downloadVideo(name, url, options, done) {
 
     video.on('error', (data) => {
         if (!hasErrorOccurred) {
-            console.log(`Failed to download ${name} (${url})`);
+            logWithTime(`Failed to download ${name} (${url})`);
             hasErrorOccurred = true;
         }
-        console.log(data);
+        logWithTime(data);
     });
 
     video.on('end', function() {
@@ -95,10 +93,10 @@ function queueDownloadWorker(item, queueItemDone) {
             videoInfo.dstDir = options.dstDir;
             videoInfo.tmpDir = options.tmpDir;
             let downloadTime = (videoInfo.downloadEndTime - videoInfo.downloadStartTime) / 1000;
-            console.log(`Downloaded ${item.title} (${downloadTime}s)`);
+            logWithTime(`Downloaded ${item.title} (${downloadTime}s)`);
             convertToAudioFile(videoInfo, queueItemDone);
         } else {
-            console.log(`An error occurred while downloading ${item.title}`);
+            logWithTime(`An error occurred while downloading ${item.title}`);
             queueItemDone();
         }
     });
@@ -117,7 +115,7 @@ function queuePlaylistItems(items, queue, downloadLog) {
     });
 
     if (skippedItems > 0) {
-        console.log(`Skipped ${skippedItems} items.`);
+        logWithTime(`Skipped ${skippedItems} items.`);
     }
 
     return queuedItemsCount;
@@ -128,18 +126,18 @@ function startProcess(url, options) {
     try {
         downloadLog = fs.readFileSync(DOWNLOAD_LOG_PATH);
     } catch (e) {
-        console.log(`ERROR: File ${DOWNLOAD_LOG_PATH} does not exist.\nIt will be automatically created with first download.`)
+        logWithTime(`ERROR: File ${DOWNLOAD_LOG_PATH} does not exist.\nIt will be automatically created with first download.`)
     }
 
     ytdlGetPlaylistInfo(url, options.infoOpt, (err, items) => {
         if (!err) {
-            console.log('Info received. Preparing video(s)...');
+            logWithTime('Info received. Preparing video(s)...');
             const series = [];
             const queue = async.queue(queueDownloadWorker, 3);
 
             series.push((seriesTaskDone) => {
                 queue.drain = () => {
-                    console.log('Finished downloading and converting.');
+                    logWithTime('Finished downloading and converting.');
                     seriesTaskDone();
                 };
 
@@ -156,8 +154,8 @@ function startProcess(url, options) {
 
             async.series(series);
         } else {
-            console.log(err);
-            console.log(`URL of the playlist: "${YOUTUBE_PLAYLIST_LINK}"`)
+            logWithTime(err);
+            logWithTime(`URL of the playlist: "${YOUTUBE_PLAYLIST_LINK}"`)
         }
     });
 }
@@ -170,16 +168,16 @@ function convertToAudioFile(video, done) {
         fs.unlinkSync(dstPath);
     }
 
-    console.log(`Converting ${video.title}...`);
+    logWithTime(`Converting ${video.title}...`);
     const proc = exec(`ffmpeg -i "${video.tmpDir}/${video.fileName}" -vn -c:a copy "${dstPath}"`);
 
     proc.on('exit', (code) => {
         if (code !== 0) {
-            console.log(`Failed to convert ${video.title}`);
+            logWithTime(`Failed to convert ${video.title}`);
         } else {
             fs.unlinkSync(`${video.tmpDir}/${video.fileName}`);
             fs.appendFileSync(DOWNLOAD_LOG_PATH, `${video.id};${video.title}\n`);
-            console.log(`Converted ${video.title}`);
+            logWithTime(`Converted ${video.title}`);
         }
         done();
     });
@@ -192,7 +190,7 @@ function ytdlGetPlaylistInfo(playlistUrl, options, callback) {
         args = args.concat(options);
     }
 
-    console.log('Getting info...');
+    logWithTime('Getting info...');
     const proc = ytdl.getInfo(playlistUrl, args);
 
     proc.on('info', (data) => {
