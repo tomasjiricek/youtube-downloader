@@ -1,8 +1,8 @@
 {
-  "name": "yt2mp3",
-  "version": "1.0.0",
-  "description": "YouTube video downloader",
-  "author": "",
+  "name": "youtube-downloader",
+  "version": "1.0.1",
+  "description": "YouTube video downloader & converter",
+  "author": "tomasjiricek",
   "license": "ISC",
   "scripts": {
     "installLoggerDeps": "cd lib/logger && npm i",

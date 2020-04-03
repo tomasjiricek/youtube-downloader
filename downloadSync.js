@@ -201,7 +201,7 @@ function ytdlGetPlaylistInfo(playlistUrl, options, callback) {
         callback(error);
     });
 
-    proc.on('end', (code) => {
+    proc.on('end', () => {
         // nothing to report
     });
 }
@@ -217,7 +217,7 @@ const options = {
     tmpDir: path.join(__dirname, 'temp')
 };
 
-exec(`ps -ef | grep "node ${__dirname}"`, (err, result) => {
+exec(`ps -ef | grep "node ${__dirname}"`, (_, result) => {
     const fileName = __filename.substr(0, __filename.lastIndexOf('.'));
     const lines = result.split('\n')
         .filter(value => (value.indexOf(fileName) !== -1 && value.indexOf('grep ') === -1));
