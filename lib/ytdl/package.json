@@ -10,6 +10,6 @@
   "author": "Tomas Jiricek",
   "license": "ISC",
   "dependencies": {
-    "youtube-dl": "^2.3.0"
+    "youtube-dl": "^3.0.1"
   }
 }
