@@ -220,9 +220,9 @@ const options = {
 exec(`ps -ef | grep "node ${__dirname}"`, (_, result) => {
     const fileName = __filename.substr(0, __filename.lastIndexOf('.'));
     const lines = result.split('\n')
-        .filter(value => (value.indexOf('/bin/sh -c') === -1 && value.indexOf(fileName) !== -1));
+        .filter(value => (value.indexOf(fileName) !== -1 && value.indexOf('grep ') === -1));
 
-    if (lines.length <= 1) {
+    if (lines.length === 2) {
         startProcess(YOUTUBE_PLAYLIST_LINK, options);
     } else {
         console.error(`Cannot run ${fileName}: Another process is already running.`);
