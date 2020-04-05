@@ -1,7 +1,12 @@
 # youtube-downloader
 
-YouTube downloader dependent on several tools, working in Linux (including Raspberry Pi) only.
+YouTube downloader is dependent on several tools. It works in Linux (including Raspberry Pi) only.
 **NOTE:** This is just experimental version.
+
+It can:
+- Download YouTube playlist
+- Convert to ogg (possibly MP3 if you have that codec and change the type in downloadSync.js)
+- Upload to Google Drive (needs configuration)
 
 ## Dependencies:
 **Mandatory:**
@@ -20,3 +25,5 @@ YouTube downloader dependent on several tools, working in Linux (including Raspb
 
 ## Run
 - `npm start` / `node downloadSync`
+
+I recommend running this repeatedly as a cron job, so you don't have to run it manually.
