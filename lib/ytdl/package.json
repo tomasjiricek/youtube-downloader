@@ -1,15 +1,11 @@
 {
   "name": "youtube-dl-api",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "NodeJS functions for calling youtube-dl process",
   "main": "ytdl.js",
   "scripts": {
-    "postinstall": "npm i youtube-dl@latest",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "./scripts/ytdlc-downloader.sh"
   },
   "author": "Tomas Jiricek",
-  "license": "ISC",
-  "dependencies": {
-    "youtube-dl": "^3.0.2"
-  }
+  "license": "ISC"
 }
