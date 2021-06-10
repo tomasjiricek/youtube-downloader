@@ -3,5 +3,5 @@ downloads/
 temp/
 *.log
 node_modules/
-secrets.json
+config.json
 **/lib/youtube-dlc

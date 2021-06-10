@@ -8,13 +8,14 @@ const { logWithTime } = require('./lib/logger');
 const ytdl = require('./lib/ytdl');
 
 const {
+    DELETE_FILES_AFTER_SYNC,
     GOOGLE_DRIVE_SYNC_FOLDER_NAME,
     YOUTUBE_PLAYLIST_LINK
-} = require('./secrets.json');
+} = require('./config.json');
 
 const DOWNLOAD_LOG_PATH = path.join(__dirname, 'downloaded.log');
 
-let skippedItems = 0;
+const convertedMusic = [];
 
 function wipePathDisabledChars(str) {
     return str
@@ -104,6 +105,7 @@ function queueDownloadWorker(item, queueItemDone) {
 
 function queuePlaylistItems(items, queue, downloadLog) {
     let queuedItemsCount = 0;
+    let skippedItems = 0;
 
     items.forEach((item) => {
         if (downloadLog.indexOf(item.id + ';') !== -1) {
@@ -133,7 +135,9 @@ function startProcess(url, options) {
         if (!err) {
             logWithTime('Info received. Preparing video(s)...');
             const series = [];
+            let queuedItemsCount = 0;
             const queue = async.queue(queueDownloadWorker, 3);
+            let finalCallback = () => null;
 
             series.push((seriesTaskDone) => {
                 queue.drain = () => {
@@ -141,18 +145,37 @@ function startProcess(url, options) {
                     seriesTaskDone();
                 };
 
-                const queuedItemsCount = queuePlaylistItems(items, queue, downloadLog);
+                queuedItemsCount = queuePlaylistItems(items, queue, downloadLog);
 
                 if (queuedItemsCount === 0) {
-                    queue.drain();
+                    logWithTime('Nothing to download.');
+                    queue.kill();
+                    seriesTaskDone();
                 }
             });
 
             if (GOOGLE_DRIVE_SYNC_FOLDER_NAME !== null) {
-                series.push(gdrive.synchronize.bind(this, options.dstDir, GOOGLE_DRIVE_SYNC_FOLDER_NAME));
+                series.push((done) => {
+                    if (queuedItemsCount === 0) {
+                        logWithTime('Skipping synchronization.');
+                        done();
+                    } else {
+                        gdrive.synchronize(options.dstDir, GOOGLE_DRIVE_SYNC_FOLDER_NAME, done)
+                    }
+                });
+
+                if (DELETE_FILES_AFTER_SYNC) {
+                    finalCallback = () => {
+                        convertedMusic.forEach((dstPath) => {
+                            if (fs.existsSync(dstPath)) {
+                                fs.unlinkSync(dstPath);
+                            }
+                        });
+                    };
+                }
             }
 
-            async.series(series);
+            async.series(series, finalCallback);
         } else {
             logWithTime(err);
             logWithTime(`URL of the playlist: "${YOUTUBE_PLAYLIST_LINK}"`)
@@ -178,6 +201,7 @@ function convertToAudioFile(video, done) {
             fs.unlinkSync(`${video.tmpDir}/${video.fileName}`);
             fs.appendFileSync(DOWNLOAD_LOG_PATH, `${video.id};${video.title}\n`);
             logWithTime(`Converted ${video.title}`);
+            convertedMusic.push(dstPath);
         }
         done();
     });
@@ -222,7 +246,7 @@ exec(`ps -ef | grep "node ${__dirname}"`, (_, result) => {
     const lines = result.split('\n')
         .filter(value => (value.indexOf(fileName) !== -1 && value.indexOf('grep ') === -1));
 
-    if (lines.length === 2) {
+    if (lines.length <= 2) {
         startProcess(YOUTUBE_PLAYLIST_LINK, options);
     } else {
         console.error(`Cannot run ${fileName}: Another process is already running.`);
