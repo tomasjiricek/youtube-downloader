@@ -1,4 +1,5 @@
 {
+    "DELETE_FILES_AFTER_SYNC": true,
     "GOOGLE_DRIVE_SYNC_FOLDER_NAME": "name-of-a-google-drive-folder",
     "YOUTUBE_PLAYLIST_LINK": "https://youtube.com/playlist?list=LIST_ID"
 }
