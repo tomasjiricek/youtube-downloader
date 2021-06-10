@@ -1,7 +1,7 @@
 # youtube-downloader
 
-YouTube downloader is dependent on several tools. It works in Linux (including Raspberry Pi) only.
-**NOTE:** This is just experimental version.
+YouTube downloader is dependent on several tools. It works in Linux only.
+**NOTE:** This is just an experimental version.
 
 It can:
 - Download YouTube playlist
