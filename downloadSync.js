@@ -5,6 +5,7 @@ const path = require('path');
 
 const gdrive = require('./lib/gdrive');
 const { logWithTime } = require('./lib/logger');
+const ffmpeg = require('./lib/ffmpeg');
 const ytdl = require('./lib/ytdl');
 
 const {
@@ -184,21 +185,21 @@ function startProcess(url, options) {
 }
 
 function convertToAudioFile(video, done) {
-    const newFileName = video.fileName + '.' + getFinalAudioExtension(video.ext);
-    const dstPath = `${video.dstDir}/${newFileName}`;
+    const dstPath = `${video.dstDir}/${video.fileName}`;
+    const videoPath = `${video.tmpDir}/${video.fileName}`;
 
     if (fs.existsSync(dstPath)) {
         fs.unlinkSync(dstPath);
     }
 
     logWithTime(`Converting ${video.title}...`);
-    const proc = exec(`ffmpeg -i "${video.tmpDir}/${video.fileName}" -vn -c:a copy "${dstPath}"`);
+    const proc = ffmpeg.toMp3(videoPath, dstPath);
 
     proc.on('exit', (code) => {
         if (code !== 0) {
             logWithTime(`Failed to convert ${video.title}`);
         } else {
-            fs.unlinkSync(`${video.tmpDir}/${video.fileName}`);
+            fs.unlinkSync(videoPath);
             fs.appendFileSync(DOWNLOAD_LOG_PATH, `${video.id};${video.title}\n`);
             logWithTime(`Converted ${video.title}`);
             convertedMusic.push(dstPath);
@@ -228,10 +229,6 @@ function ytdlGetPlaylistInfo(playlistUrl, options, callback) {
     proc.on('end', () => {
         // nothing to report
     });
-}
-
-function getFinalAudioExtension(originalExt) {
-    return originalExt.toLowerCase() === 'webm' ? 'ogg' : originalExt;
 }
 
 const options = {
