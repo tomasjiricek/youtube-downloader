@@ -202,7 +202,7 @@ function convertToAudioFile(video, done) {
             fs.unlinkSync(videoPath);
             fs.appendFileSync(DOWNLOAD_LOG_PATH, `${video.id};${video.title}\n`);
             logWithTime(`Converted ${video.title}`);
-            convertedMusic.push(dstPath);
+            convertedMusic.push(dstPath + '.mp3');
         }
         done();
     });
