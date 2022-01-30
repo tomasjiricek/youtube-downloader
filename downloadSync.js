@@ -87,11 +87,20 @@ function downloadVideo(name, url, options, done) {
     });
 }
 
+function getFullName(item) {
+    if ((/.+ \- .+/).test(item.title)) {
+        return item.title;
+    }
+
+    return `${item.artist || item.creator || item.uploader} - ${item.title || item.fulltitle}`;
+}
+
 function queueDownloadWorker(item, queueItemDone) {
     const url = `https://www.youtube.com/watch?v=${item.id}`;
     downloadVideo(item.title, url, options, (fileName, videoInfo) => {
         if (fileName) {
             videoInfo.fileName = fileName;
+            videoInfo.fullFileName = wipePathDisabledChars(getFullName(videoInfo));
             videoInfo.dstDir = options.dstDir;
             videoInfo.tmpDir = options.tmpDir;
             let downloadTime = (videoInfo.downloadEndTime - videoInfo.downloadStartTime) / 1000;
@@ -185,7 +194,7 @@ function startProcess(url, options) {
 }
 
 function convertToAudioFile(video, done) {
-    const dstPath = `${video.dstDir}/${video.fileName}`;
+    const dstPath = `${video.dstDir}/${video.fullFileName}`;
     const videoPath = `${video.tmpDir}/${video.fileName}`;
 
     if (fs.existsSync(dstPath)) {
@@ -200,7 +209,7 @@ function convertToAudioFile(video, done) {
             logWithTime(`Failed to convert ${video.title}`);
         } else {
             fs.unlinkSync(videoPath);
-            fs.appendFileSync(DOWNLOAD_LOG_PATH, `${video.id};${video.title}\n`);
+            fs.appendFileSync(DOWNLOAD_LOG_PATH, `${video.id};${video.fullFileName}\n`);
             logWithTime(`Converted ${video.title}`);
             convertedMusic.push(dstPath + '.mp3');
         }
