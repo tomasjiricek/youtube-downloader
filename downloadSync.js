@@ -92,7 +92,7 @@ function getFullName(item) {
         return item.title;
     }
 
-    return `${item.artist || item.creator || item.uploader} - ${item.title || item.fulltitle}`;
+    return `${item.creator || item.artist || item.uploader} - ${item.title || item.fulltitle}`;
 }
 
 function queueDownloadWorker(item, queueItemDone) {
