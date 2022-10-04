@@ -12,6 +12,6 @@
   },
   "dependencies": {
     "argv": "0.0.2",
-    "async": "^1.5.2"
+    "async": "^2.6.4"
   }
 }
